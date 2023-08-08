@@ -36,3 +36,9 @@ for i in range(len(distance)):
 
 if not flag:
     print(-1)
+
+'''
+visited 따져야 하는 이유 좀 했갈렸음
+단방향이긴 하지만 최단 거리를 구하므로..
+다시 왕복해서 돌아올 수도 있음. 그때 못 오게 하려면 visited 필요
+'''
