@@ -1,106 +1,97 @@
-from collections import deque
+def gravity():
+    global blocks
+    temp = 0
+    for c in range(N):
+        for r in range(N - 1, -1, -1):
+            # 아래 블록
+            cur_r = r
+            while cur_r > 0 and blocks[cur_r][c] == -2:
+                cur_r -= 1
+            if cur_r != r and blocks[cur_r][c] != -1:
+                temp = blocks[cur_r][c]
+                blocks[cur_r][c] = -2
+                blocks[r][c] = temp
 
-# 인접 블록 찾기 -> 블록 크기, 무지개 크기, 블록좌표 리턴
-def bfs(x, y, color):
-    q = deque()
-    q.append([x, y])
-    mv = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-
-    block_cnt, rainbow_cnt = 1, 0
-    visited_blocks, rainbows = [[x, y]], []
-
-    while q:
-        x, y = q.popleft()
-        for d in range(4):
-            nx = x + mv[d]
-            ny = y + mv[d]
-
-            # 범위 안이면서 방문 안 한 일반 블록의 경우
-            if 0 <= nx < n and 0 <= ny < n and not visited[nx][ny] and graph[nx][ny] == color:
-                visited[nx][ny] = 1
-                q.append([nx, ny])
-                block_cnt += 1
-                visited_blocks.append([nx, ny])
-
-            # 범위 안이면서 방문 안 한 무지개 블록인 경우
-            elif 0 <= nx < n and 0 <= ny < n and not visited[nx][ny] and graph[nx][ny] == 0:
-                visited[nx][ny] = 1
-                graph.append([nx, ny])
-                block_cnt += 1
-                rainbow_cnt += 1
-                rainbows.append([nx, ny])
-
-    # 무지개 블록은 방문 다시 해제
-    for x, y in rainbows:
-        visited[x][y] = 0
-
-    return [block_cnt, rainbow_cnt, visited_blocks + rainbows]
-
-# 블록 제거 함수
-def remove(block):
-    for x, y in block:
-        graph[x][y] = -2
-
-# 중력 함수
-def gravity(graph):
-    for i in range(n-2, -1, -1):
-        for j in range(n):
-            if graph[i][j] > -1:
-                r = i
-                while True:
-                    if 0 <= r + 1 < n and graph[r+1][j] == -2:
-                        graph[r+1][j] = graph[r][j]
-                        graph[r][j] = -2
-                        r += 1
-                    else:
-                        break
-
-# 반시계 회전 함수
-def rot90(a):
-    new_a = [[0] * n for _ in range(n)]
-    for i in range(n):
-        for j in range(n):
-            new_a[n-1-j][i] = a[i][j]
-
-    return new_a
+    return
 
 
-# 0. 메인코드
-n, m = map(int, input().split())
-graph = [list(map(int, input().split())) for _ in range(n)]
+def rotate():
+    global blocks
+    temp_blocks = [[0] * N for _ in range(N)]
+    for r in range(N):
+        for c in range(N):
+            temp_blocks[r][c] = blocks[c][N - 1 - r]
+
+    blocks = temp_blocks[:]
+    return
+
+# 상 좌 하 우
+dr = [-1, 0, 1, 0]
+dc = [0, -1, 0, 1]
+
+N, M = map(int, input().split())
+blocks = [list(map(int, input().split())) for _ in range(N)]
 
 score = 0
-
-# 1. 오토플레이 -> while {2. 크기가 가장 큰 블록 찾기, 3. 블록 제거 + 점수 더하기 4. 중력 5. 90도 회전 6. 중력}
 while True:
-    visited = [list(0 for _ in range(n)) for _ in range(n)]
-    blocks = [] # 가능한 블록 그룹들 넣을 리스트
+    # 1. 가장 큰 블록 그룹 찾기
+    largest_block = list()
+    largest_rainbow = 0
+    visited = [[0] * N for _ in range(N)]
+    for r in range(N):
+        for c in range(N):
+            if visited[r][c] == 1:
+                continue
+            cur_block = blocks[r][c]
+            if cur_block <= 0:
+                continue
+            visited[r][c] = 1
+            result_list = [[r, c]]
+            queue = [[r, c]]
+            rainbow_num = 0
+            while queue:
+                qr, qc = queue.pop(0)
+                for i in range(4):
+                    cr = qr + dr[i]
+                    cc = qc + dc[i]
+                    if 0 <= cr < N and 0 <= cc < N and visited[cr][cc] == 0 and (
+                            blocks[cr][cc] == 0 or blocks[cr][cc] == cur_block):
+                        result_list.append([cr, cc])
+                        visited[cr][cc] = 1
+                        if blocks[cr][cc] == 0:
+                            rainbow_num += 1
+                            visited[cr][cc] = 2
 
-    for i in range(n):
-        for j in range(n):
-            if graph[i][j] > 0 and not visited[i][j]: # 일반 블록이면서 방문 안 했으면
-                visited[i][j] = 1
-                block_info = bfs(i, j, graph[i][j]) # 인접한 블록 찾기 [블록 크기, 무지개 블록 개수, 블록 좌표]
-                if block_info[0] >= 2:
-                    blocks.append(block_info)
+                        if len(largest_block) < len(result_list):
+                            largest_block = result_list[:]
+                            largest_rainbow = rainbow_num
+                        elif len(largest_block) == len(result_list) and largest_rainbow <= rainbow_num:
+                            largest_block = result_list[:]
+                            largest_rainbow = rainbow_num
+                        queue.append([cr, cc])
+            # 무지개 visited 초기화
+            for tr in range(N):
+                for tc in range(N):
+                    if visited[tr][tc] == 2:
+                        visited[tr][tc] = 0
 
-    blocks.sort(reverse=True) # 블록 크기가 제일 큰 블록 그룹부터 정렬
-
-    # 3. 블록 제거 + 점수 더하기
-    if not blocks:
+    # 1-1 block 갯수가 1 이하면 break
+    if len(largest_block) <= 1:
         break
+    else:
+        score += len(largest_block) ** 2
 
-    remove(blocks[0][2]) # 블록 좌표 리스트
-    score += blocks[0][0] ** 2 # 블록 크기의 제곱 더하기
+    # 2. 찾은 블록들 제거하기
+    for tr, tc in largest_block:
+        blocks[tr][tc] = -2
 
-    # 4. 중력
-    gravity(graph)
+    # 3. 중력
+    gravity()
 
-    # 5. 90도 회전
-    graph = rot90(graph)
+    # 4. 반시계 90도
+    rotate()
 
-    # 6. 중력
-    gravity(graph)
-
+    # 5. 중력
+    gravity()
 
 print(score)
