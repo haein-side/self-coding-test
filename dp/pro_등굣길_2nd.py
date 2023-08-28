@@ -16,14 +16,7 @@ def solution(m, n, puddles):
                 if dp[i][j] == 'x':
                     dp[i][j] = 0
                 else:
-                    if dp[i-1][j] == 0 and dp[i][j-1] == 0:
-                        dp[i][j] = 0
-                    elif dp[i-1][j] != 0 and dp[i][j-1] == 0:
-                        dp[i][j] = dp[i-1][j]
-                    elif dp[i-1][j] == 0 and dp[i][j-1] != 0:
-                        dp[i][j] = dp[i][j-1]
-                    else:
-                        dp[i][j] = dp[i-1][j] + dp[i][j-1]
+                    dp[i][j] = dp[i-1][j] + dp[i][j-1]
 
     answer = dp[n][m]
 
