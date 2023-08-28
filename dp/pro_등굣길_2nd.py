@@ -16,8 +16,8 @@ def solution(m, n, puddles):
                 if dp[i][j] == 'x':
                     dp[i][j] = 0
                 else:
-                    dp[i][j] = dp[i-1][j] + dp[i][j-1]
+                    dp[i][j] = (dp[i-1][j] + dp[i][j-1]) % 1000000007
 
     answer = dp[n][m]
 
-    return answer % 1000000007
+    return answer
