@@ -16,6 +16,7 @@ def solution(tickets):
     for i in destinations:
         destinations[i].sort(key = lambda x : x[0])
 
+    print(destinations)
     def dfs(v):
         nonlocal result
 
@@ -41,3 +42,5 @@ def solution(tickets):
     dfs('ICN')
 
     return result
+
+solution([["ICN", "A"], ["ICN", "B"], ["B", "ICN"]])
