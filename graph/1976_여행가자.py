@@ -4,6 +4,7 @@ input = sys.stdin.readline
 def union(x,y):
     x = find(x)
     y = find(y)
+    print(x, y)
     if x < y:
         parents[y] = x
     else:
@@ -33,3 +34,12 @@ for i in range(1,m):
         break
 else:
     print("YES")
+
+'''
+3
+3
+0 1 0
+1 0 1
+0 1 0
+1 2 3
+'''
